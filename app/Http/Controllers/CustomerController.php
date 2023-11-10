@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Http\Requests\StoreCustomerRequest;
+use App\Http\Requests\BulkStoreInvoiceRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerCollection;
 use App\Filters\CustomerFilter;
@@ -51,6 +52,10 @@ class CustomerController extends Controller
     public function store(StoreCustomerRequest $request)
     {
         return new CustomerResource(Customer::create($request->all()));
+    }
+
+    public function bulkStore(BulkStoreInvoiceRequest $request)
+    {
     }
 
     /**
