@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class BulkStoreInvoiceRequest extends FormRequest
 {
@@ -11,7 +12,9 @@ class BulkStoreInvoiceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        return $user !== null && $user->tokenCan('delete');
     }
 
     /**
@@ -22,13 +25,28 @@ class BulkStoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            '*.customerId' => [],
-            '*.amount' => [],
-            '*.status' => [],
-            '*.billedDate' => [],
-            '*.paidDate' => [],
-            '*.customerId' => [],
-            '*.customerId' => [],
+            '*.customerId' => ['required', 'integer'],
+            '*.amount' => ['required', 'numeric'],
+            '*.status' => [
+                'required',
+                Rule::in(['B', 'P', 'V', 'b', 'p', 'v'])
+            ],
+            '*.billedDate' => ['required', 'date_format:Y-m-d H:i:s'],
+            '*.paidDate' => ['date_format:Y-m-d H:i:s', 'nullable'],
         ];
+    }
+
+    protected function prepareForValidation()
+    {
+        $data = [];
+
+        foreach ($this->toArray() as $object) {
+            $object['customer_id'] = $object['customerId'] ?? null;
+            $object['billed_dated'] = $object['billedDate'] ?? null;
+            $object['paid_dated'] = $object['paidDate'] ?? null;
+            $data[] = $object;
+        }
+
+        $this->merge($data);
     }
 }
